@@ -1,0 +1,9 @@
+*.o
+unit1
+*~
+*.swp
+*.ppu
+backup/
+lib/
+automatensimulation
+automatensimulation.exe
