@@ -1,0 +1,4 @@
+UNIT Automat;
+
+BEGIN
+END.
