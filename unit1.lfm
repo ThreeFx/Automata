@@ -1,64 +1,64 @@
 object Form1: TForm1
-  Left = 432
-  Height = 417
-  Top = 289
-  Width = 611
-  ClientHeight = 417
-  ClientWidth = 611
-  LCLVersion = '0.9.30.4'
+  Left = -1757
+  Height = 863
+  Top = 294
+  Width = 914
+  ClientHeight = 863
+  ClientWidth = 914
+  LCLVersion = '1.4.2.0'
   object importLabel: TLabel
     Left = 8
-    Height = 16
+    Height = 20
     Top = 8
-    Width = 135
+    Width = 140
     Caption = 'Automat importieren'
     ParentColor = False
   end
-  object Button1: TButton
+  object dateiButton: TButton
     Left = 16
-    Height = 25
-    Top = 32
+    Height = 27
+    Top = 34
     Width = 112
     Caption = 'Datei öffnen'
-    OnClick = Button1Click
+    OnClick = dateiButtonClick
     TabOrder = 0
   end
   object status: TLabel
     Left = 16
     Height = 1
-    Top = 72
+    Top = 80
     Width = 1
     ParentColor = False
   end
   object eingabe: TEdit
-    Left = 23
-    Height = 23
-    Top = 154
+    Left = 392
+    Height = 28
+    Top = 17
     Width = 97
     TabOrder = 1
     Text = 'Eingabefeld'
   end
   object eingabesenden: TButton
-    Left = 168
-    Height = 25
-    Top = 152
+    Left = 400
+    Height = 27
+    Top = 51
     Width = 75
     Caption = 'Klick!'
     OnClick = eingabesendenClick
     TabOrder = 2
   end
   object akzeptiert: TLabel
-    Left = 32
-    Height = 16
-    Top = 248
-    Width = 78
+    Left = 632
+    Height = 20
+    Top = 8
+    Width = 79
     Caption = 'Akzeptiert?!'
     ParentColor = False
   end
   object daumenhoch: TImage
-    Left = 144
-    Height = 95
-    Top = 208
+    Left = 592
+    Height = 102
+    Top = 34
     Width = 146
     Center = True
     Picture.Data = {
@@ -2096,9 +2096,9 @@ object Form1: TForm1
     Visible = False
   end
   object daumenrunter: TImage
-    Left = 144
-    Height = 95
-    Top = 224
+    Left = 592
+    Height = 102
+    Top = 34
     Width = 146
     Center = True
     Picture.Data = {
@@ -10075,13 +10075,19 @@ object Form1: TForm1
     Stretch = True
     Visible = False
   end
+  object graph: TImage
+    Left = 16
+    Height = 688
+    Top = 144
+    Width = 882
+  end
   object chooseFile: TOpenDialog
     Width = 10
     Height = 10
     Title = 'Automatendatei öffnen'
     DefaultExt = '.csv'
     FileName = 'test.txt'
-    left = 528
-    top = 8
+    left = 32
+    top = 68
   end
 end
