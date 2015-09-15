@@ -1,5 +1,7 @@
 UNIT Automat;
 
+{$STATIC ON}
+
 INTERFACE
 
 USES fgl;
@@ -9,7 +11,7 @@ TYPE
 		PRIVATE
 			name : String;
 		PUBLIC
-			CONSTRUCTOR Create(name : String);
+			CONSTRUCTOR Create(_name : String);
 			DESTRUCTOR Dispose();
 			FUNCTION GetName() : String;
 	END;
@@ -17,7 +19,7 @@ TYPE
 	{TZustand = CLASS
 	PRIVATE
 		next: TFPGMap<char,TZustand>; {TFPGMap --> Dicitonary --> generisches Array}
-		{PUBLIC
+		PUBLIC
 		CONSTRUCTOR Create(dict: TFPGMap<char,TZustand>);
 		DESTRUCTOR Dispose;
 		FUNCTION GetNext(zeichen: char): TZustand;
@@ -51,19 +53,19 @@ TYPE
 
 	TDEA = CLASS(TAutomat)
 		PUBLIC
-			CONSTRUCTOR Create(alphabet : String; zustaende, endzustaende : TZustandArray;
-			            startzustand: TZustand; uebergangstabelle : TUebergangstabelle);
+			CONSTRUCTOR Create(_alphabet : String; _zustaende, _endzustaende : TZustandArray;
+			            _startzustand: TZustand; _uebergangstabelle : TUebergangstabelle);
 			DESTRUCTOR Dispose();
 			FUNCTION SimuliereEingabe(eingabe : String) : TZustand; OVERRIDE;
 			FUNCTION AkzeptiertEingabe(eingabe : String) : Boolean;
-			FUNCTION CreateFromFile(filename : String) : TDEA;
+			CLASS FUNCTION CreateFromFile(filename : String) : TDEA; STATIC;
 	END;
 
 IMPLEMENTATION USES SysUtils;
 
-	CONSTRUCTOR TZustand.Create(name : String);
+	CONSTRUCTOR TZustand.Create(_name : String);
 	BEGIN
-		self.name := name;
+		self.name := _name;
 	END;
 
 	DESTRUCTOR TZustand.Dispose();
@@ -75,14 +77,14 @@ IMPLEMENTATION USES SysUtils;
 		result := name;
 	END;
 
-	CONSTRUCTOR TDEA.Create(alphabet : String; zustaende, endzustaende : TZustandArray;
-			            startzustand : TZustand; uebergangstabelle : TUebergangstabelle);
+	CONSTRUCTOR TDEA.Create(_alphabet : String; _zustaende, _endzustaende : TZustandArray;
+			            _startzustand : TZustand; _uebergangstabelle : TUebergangstabelle);
 	BEGIN
-		self.alphabet := alphabet;
-		self.zustaende := zustaende;
-		self.endzustaende := endzustaende;
-		self.startzustand := startzustand;
-		self.uebergangstabelle := uebergangstabelle;
+		self.alphabet := _alphabet;
+		self.zustaende := _zustaende;
+		self.endzustaende := _endzustaende;
+		self.startzustand := _startzustand;
+		self.uebergangstabelle := _uebergangstabelle;
 	END;
 
 	DESTRUCTOR TDEA.Dispose();
@@ -187,61 +189,61 @@ IMPLEMENTATION USES SysUtils;
 	END;
 
 
-	FUNCTION TDEA.CreateFromFile(filename : String) : TDEA;
+	CLASS FUNCTION TDEA.CreateFromFile(filename : String) : TDEA; STATIC;
 	VAR
 		f : TextFile;
 		i, j : Integer;
-		alphabet, helperstring : String;
+		_alphabet, helperstring : String;
 		helperarr : TStringArray;
-		zustaende, endzustaende : TZustandArray;
-		startzustand : TZustand;
-		uebergangstabelle : TUebergangsTabelle;
+		_zustaende, _endzustaende : TZustandArray;
+		_startzustand : TZustand;
+		_uebergangstabelle : TUebergangsTabelle;
 	BEGIN
 		AssignFile(f, filename);
 			Reset(f);
 
-			ReadLn(f, alphabet);
+			ReadLn(f, _alphabet);
 
 			ReadLn(f, helperstring);
 			helperarr := SplitString(helperstring, ';');
-			SetLength(zustaende, Length(helperarr));
+			SetLength(_zustaende, Length(helperarr));
 			FOR i := 0 TO Length(helperarr) DO
 			BEGIN
-				zustaende[i] := TZustand.Create(helperarr[i]);
+				_zustaende[i] := TZustand.Create(helperarr[i]);
 			END;
 
 			ReadLn(f, helperstring);
-			startzustand := GetByName(helperstring, zustaende);
+			_startzustand := GetByName(helperstring, _zustaende);
 
 			ReadLn(f, helperstring);
 			helperarr := SplitString(helperstring, ';');
-			SetLength(endzustaende, Length(helperarr));
+			SetLength(_endzustaende, Length(helperarr));
 			FOR i := 0 TO Length(helperarr) DO
 			BEGIN
-				endzustaende[i] := GetByName(helperarr[i], zustaende);
+				_endzustaende[i] := GetByName(helperarr[i], _zustaende);
 			END;
 
-			uebergangstabelle.alphabet := alphabet;
-			SetLength(uebergangstabelle.tabelle, 0);
+			_uebergangstabelle.alphabet := _alphabet;
+			SetLength(_uebergangstabelle.tabelle, 0);
 			i := 0;
 			WHILE NOT EOF(f) DO
 			BEGIN
-				SetLength(uebergangstabelle.tabelle, Length(uebergangstabelle.tabelle) + 1);
+				SetLength(_uebergangstabelle.tabelle, Length(_uebergangstabelle.tabelle) + 1);
 				ReadLn(f, helperstring);
 				helperarr := SplitString(helperstring, ';');
 				
-				uebergangstabelle.tabelle[i].ursprung := GetByName(helperarr[0], zustaende);
-				SetLength(uebergangstabelle.tabelle[i].ziel, Length(helperarr) - 1);
+				_uebergangstabelle.tabelle[i].ursprung := GetByName(helperarr[0], _zustaende);
+				SetLength(_uebergangstabelle.tabelle[i].ziel, Length(helperarr) - 1);
 				
 				FOR j := 1 TO Length(helperarr) - 1 DO
 				BEGIN
-					uebergangstabelle.tabelle[i].ziel[j-1] := GetByName(helperarr[i], zustaende);
+					_uebergangstabelle.tabelle[i].ziel[j-1] := GetByName(helperarr[i], _zustaende);
 				END;
 				
 				Inc(i);
 			END;
 		CloseFile(f);
-		result := TDEA.Create(alphabet, zustaende, endzustaende, startzustand, uebergangstabelle);
+		result := TDEA.Create(_alphabet, _zustaende, _endzustaende, _startzustand, _uebergangstabelle);
 	END;
 
 	{CONSTRUCTOR TZustand.Create(dict: TFPGMap<char,TZustand>);

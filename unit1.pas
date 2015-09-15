@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, TAGraph, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, ExtCtrls;
+  StdCtrls, ExtCtrls, Automat;
 
 type
 

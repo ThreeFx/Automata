@@ -8,9 +8,9 @@ object Form1: TForm1
   LCLVersion = '1.4.2.0'
   object importLabel: TLabel
     Left = 8
-    Height = 20
+    Height = 15
     Top = 8
-    Width = 140
+    Width = 112
     Caption = 'Automat importieren'
     ParentColor = False
   end
@@ -32,7 +32,7 @@ object Form1: TForm1
   end
   object eingabe: TEdit
     Left = 392
-    Height = 28
+    Height = 23
     Top = 17
     Width = 97
     TabOrder = 1
@@ -49,9 +49,9 @@ object Form1: TForm1
   end
   object akzeptiert: TLabel
     Left = 632
-    Height = 20
+    Height = 15
     Top = 8
-    Width = 79
+    Width = 61
     Caption = 'Akzeptiert?!'
     ParentColor = False
   end
