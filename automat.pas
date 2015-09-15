@@ -5,20 +5,25 @@ INTERFACE
 USES fgl;
 
 TYPE
-	{TZustand = CLASS
-		PUBLIC
-			Constructor Create();
-			DESTRUCTOR Dispose();
-	END;}
-
 	TZustand = CLASS
+		PRIVATE
+			name : String;
+		PUBLIC
+			CONSTRUCTOR Create(name : String);
+			DESTRUCTOR Dispose();
+			FUNCTION GetName() : String;
+	END;
+
+	{TZustand = CLASS
 	PRIVATE
 		next: TFPGMap<char,TZustand>; {TFPGMap --> Dicitonary --> generisches Array}
-	PUBLIC
+		{PUBLIC
 		CONSTRUCTOR Create(dict: TFPGMap<char,TZustand>);
 		DESTRUCTOR Dispose;
 		FUNCTION GetNext(zeichen: char): TZustand;
-	END;
+	END;}
+
+	TStringArray = Array of String;
 
 	TZustandArray = Array of TZustand;
 	TZustandTabelle = Array of TZustandArray;
@@ -41,29 +46,43 @@ TYPE
 			endzustaende : TZustandArray;
 			uebergangstabelle : TUebergangstabelle;
 		PUBLIC
-			CONSTRUCTOR Create(a : String; z, endz : TZustandArray;
-			            startz : TZustand; uetabelle : TUebergangstabelle);
-			DESTRUCTOR Dispose();
 			FUNCTION SimuliereEingabe(eingabe : String) : TZustand; VIRTUAL; ABSTRACT;
 	END;
 
 	TDEA = CLASS(TAutomat)
 		PUBLIC
-			CONSTRUCTOR Create(a : String; z, endz : TZustandArray;
-			            startz : TZustand; uetabelle : TUebergangstabelle);
+			CONSTRUCTOR Create(alphabet : String; zustaende, endzustaende : TZustandArray;
+			            startzustand: TZustand; uebergangstabelle : TUebergangstabelle);
+			DESTRUCTOR Dispose();
+			FUNCTION SimuliereEingabe(eingabe : String) : TZustand; OVERRIDE;
 			FUNCTION AkzeptiertEingabe(eingabe : String) : Boolean;
+			FUNCTION CreateFromFile(filename : String) : TDEA;
 	END;
 
-IMPLEMENTATION
+IMPLEMENTATION USES SysUtils;
 
-	CONSTRUCTOR TDEA.Create(a : String; z, endz : TZustandArray;
-			            startz : TZustand; uetabelle : TUebergangstabelle);
+	CONSTRUCTOR TZustand.Create(name : String);
 	BEGIN
-		self.alphabet := a;
-		self.zustaende := z;
-		self.endzustaende := endz;
-		self.startzustand := startz;
-		self.uebergangstabelle := self.uetabelle;
+		self.name := name;
+	END;
+
+	DESTRUCTOR TZustand.Dispose();
+	BEGIN
+	END;
+
+	FUNCTION TZustand.GetName() : String;
+	BEGIN
+		result := name;
+	END;
+
+	CONSTRUCTOR TDEA.Create(alphabet : String; zustaende, endzustaende : TZustandArray;
+			            startzustand : TZustand; uebergangstabelle : TUebergangstabelle);
+	BEGIN
+		self.alphabet := alphabet;
+		self.zustaende := zustaende;
+		self.endzustaende := endzustaende;
+		self.startzustand := startzustand;
+		self.uebergangstabelle := uebergangstabelle;
 	END;
 
 	DESTRUCTOR TDEA.Dispose();
@@ -85,29 +104,28 @@ IMPLEMENTATION
 		END;
 		
 		{ Auswahl der richtigen Spalte }
-		FOR j := 0 TO Length(uetabelle.tabelle[i]) - 1 DO
+		FOR j := 0 TO Length(uetabelle.tabelle[i].ziel) - 1 DO
 		BEGIN
-			IF alphabet[j] = zeichen THEN
+			IF uetabelle.alphabet[j] = zeichen THEN
 			BEGIN
 				break;
 			END;
 		END;
 		
 		{ Ergebnis festhalten }
-		result := uetabelle.tabelle[i][j];
+		result := uetabelle.tabelle[i].ziel[j];
 	END;
 
 	{ Simuliert die Eingabe in dem Automaten }
-	FUNCTION TDEA.SimuliereEingabe(eingabe : String) : TZustand; OVERRIDE;
+	FUNCTION TDEA.SimuliereEingabe(eingabe : String) : TZustand;
 	VAR
 		i : Integer;
-		aktuellerzustand : TZustand;
 	BEGIN
 		result := startzustand;
 		
 		FOR i := 1 TO Length(eingabe) DO
 		BEGIN
-			result := NaechsterZustand(result, eingabe[i], uetabelle);
+			result := NaechsterZustand(result, eingabe[i], uebergangstabelle);
 		END;
 	END;
 
@@ -132,7 +150,101 @@ IMPLEMENTATION
 		END;
 	END;
 
-	CONSTRUCTOR TZustand.Create(dict: TFPGMap<char,TZustand>);
+	FUNCTION SplitString(str : String; delimiter : Char) : TStringArray;
+	VAR
+		i, j : Integer;
+	BEGIN
+		SetLength(result, 0);
+		j := 0;
+
+		FOR i := 1 TO Length(str) DO
+		BEGIN
+			IF str[i] <> delimiter THEN
+			BEGIN
+				Inc(j);
+			END
+			ELSE
+			BEGIN
+				SetLength(result, Length(result) + 1);
+				result[High(result)] := Copy(str, i, j);
+				j := 0;
+			END;
+		END;
+	END;
+
+	FUNCTION GetByName(name : String; list : TZustandArray) : TZustand;
+	VAR
+		i : Integer;
+	BEGIN
+		FOR i := 0 TO Length(list) - 1 DO
+		BEGIN
+			IF CompareText(list[i].GetName(), name) = 0 THEN
+			BEGIN
+				result := list[i];
+				break;
+			END;
+		END;
+	END;
+
+
+	FUNCTION TDEA.CreateFromFile(filename : String) : TDEA;
+	VAR
+		f : TextFile;
+		i, j : Integer;
+		alphabet, helperstring : String;
+		helperarr : TStringArray;
+		zustaende, endzustaende : TZustandArray;
+		startzustand : TZustand;
+		uebergangstabelle : TUebergangsTabelle;
+	BEGIN
+		AssignFile(f, filename);
+			Reset(f);
+
+			ReadLn(f, alphabet);
+
+			ReadLn(f, helperstring);
+			helperarr := SplitString(helperstring, ';');
+			SetLength(zustaende, Length(helperarr));
+			FOR i := 0 TO Length(helperarr) DO
+			BEGIN
+				zustaende[i] := TZustand.Create(helperarr[i]);
+			END;
+
+			ReadLn(f, helperstring);
+			startzustand := GetByName(helperstring, zustaende);
+
+			ReadLn(f, helperstring);
+			helperarr := SplitString(helperstring, ';');
+			SetLength(endzustaende, Length(helperarr));
+			FOR i := 0 TO Length(helperarr) DO
+			BEGIN
+				endzustaende[i] := GetByName(helperarr[i], zustaende);
+			END;
+
+			uebergangstabelle.alphabet := alphabet;
+			SetLength(uebergangstabelle.tabelle, 0);
+			i := 0;
+			WHILE NOT EOF(f) DO
+			BEGIN
+				SetLength(uebergangstabelle.tabelle, Length(uebergangstabelle.tabelle) + 1);
+				ReadLn(f, helperstring);
+				helperarr := SplitString(helperstring, ';');
+				
+				uebergangstabelle.tabelle[i].ursprung := GetByName(helperarr[0], zustaende);
+				SetLength(uebergangstabelle.tabelle[i].ziel, Length(helperarr) - 1);
+				
+				FOR j := 1 TO Length(helperarr) - 1 DO
+				BEGIN
+					uebergangstabelle.tabelle[i].ziel[j-1] := GetByName(helperarr[i], zustaende);
+				END;
+				
+				Inc(i);
+			END;
+		CloseFile(f);
+		result := TDEA.Create(alphabet, zustaende, endzustaende, startzustand, uebergangstabelle);
+	END;
+
+	{CONSTRUCTOR TZustand.Create(dict: TFPGMap<char,TZustand>);
 	BEGIN
 		next := dict;
 	END;
@@ -153,7 +265,7 @@ IMPLEMENTATION
 	BEGIN
 		next.Find(zeichen,sinnlos);
 		result:=next.GetData(sinnlos);
-	END;
+	END;}
 
 BEGIN
 END.
