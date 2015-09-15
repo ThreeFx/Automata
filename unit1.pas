@@ -79,7 +79,7 @@ end;
 procedure verbindeZustaende(gr : TImage; x1,y1,x2,y2 : Integer; name : String);
 var abw : Integer;
 begin
-     if (x1 <> x2 AND y1 <> y2) then
+     if ((x1 <> x2) AND (y1 <> y2)) then
      begin
        abw := 30 + Random(60);
        gr.canvas.Line(30 + abw + (y1 - 1) * 200, 30 + abw + (x1 - 1) * 200, 30 + abw +  (y2 - 1) * 200, 30 + abw + (x2 - 1) * 200);
